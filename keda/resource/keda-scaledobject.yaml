@@ -1,0 +1,22 @@
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: scaling-poc-scaledobject
+spec:
+  scaleTargetRef:
+    name: scaling-poc
+  minReplicaCount: 0
+  maxReplicaCount: 6
+  pollingInterval: 15
+  cooldownPeriod: 30
+  triggers:
+  - type: prometheus
+    metadata:
+      # Prometheus server address
+      serverAddress: http://prometheus-server.tanzu-system-monitoring.svc.cluster.local:80
+      # Query to get the current QPS
+      query: |
+        sum by (app) (rate(http_requests_total{path="/api"}[1m]))
+      # Target QPS per replica
+      threshold: "100"
